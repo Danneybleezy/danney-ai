@@ -1,16 +1,15 @@
 import streamlit as st
 import requests
-import os
 
-# UI setup
+# ---- Page Config ----
 st.set_page_config(page_title="🤖 Danney AI", layout="centered")
 st.title("🤖 Danney AI")
-st.markdown("Your lightning-fast mobile assistant powered by Groq 🚀")
+st.markdown("Your lightning-fast mobile assistant powered by **Groq (LLaMA 3)** 🚀")
 
-# Input
+# ---- User Input ----
 user_input = st.text_input("You:", placeholder="Ask me anything...")
 
-# On input
+# ---- On Input ----
 if user_input:
     with st.spinner("Danney is thinking..."):
         try:
@@ -18,10 +17,11 @@ if user_input:
                 "Authorization": f"Bearer {st.secrets['groq_api_key']}",
                 "Content-Type": "application/json"
             }
+
             body = {
-                "model": "mixtral-8x7b-32768",  # You can also try llama3-70b-8192
+                "model": "llama3-70b-8192",  # ✅ Current active Groq model
                 "messages": [
-                    {"role": "system", "content": "You are Danney, a helpful mobile assistant."},
+                    {"role": "system", "content": "You are Danney, a helpful and friendly mobile assistant."},
                     {"role": "user", "content": user_input}
                 ],
                 "temperature": 0.7,
@@ -29,14 +29,19 @@ if user_input:
                 "stream": False
             }
 
-            response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=body)
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers=headers,
+                json=body
+            )
+
             result = response.json()
 
             if "choices" in result:
-                answer = result["choices"][0]["message"]["content"]
-                st.markdown(f"**Danney:** {answer}")
+                reply = result["choices"][0]["message"]["content"]
+                st.markdown(f"**Danney:** {reply}")
             else:
-                st.error(f"Failed to get response: {result}")
-
+                st.error(f"❌ Failed to get response: {result.get('error', 'Unknown error')}")
+        
         except Exception as e:
-            st.error(f"Error: {str(e)}")
+            st.error(f"⚠️ Error: {str(e)}")
